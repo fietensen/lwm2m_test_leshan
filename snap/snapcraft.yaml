@@ -1,0 +1,32 @@
+name: lwm2m-test # you probably want to 'snapcraft register <name>'
+base: core18 # the base snap is the execution environment for this snap
+version: '0.1' # just for humans, typically '1.2+git' or '1.3.2'
+summary: lwm2m test using eclipse leshan # 79 char long summary
+description: |
+        nothing here
+
+grade: devel # must be 'stable' to release into candidate/stable channels
+confinement: devmode # use 'strict' once you have the right plugs and slots
+
+apps:
+  lwm2m-test:
+    command: java -jar $SNAP/lwm2m_test.jar
+
+parts:
+  main-package:
+    source: ./
+    plugin: meson
+    source-type: local
+    override-build: |
+            snapcraftctl build
+            cp "snapbuild/lwm2m_test.jar" "$SNAPCRAFT_PART_INSTALL/lwm2m_test.jar"
+    after: [eclipse-leshan]
+
+  eclipse-leshan:
+    source: https://github.com/eclipse/leshan.git
+    plugin: maven
+    source-type: git
+    build-packages: [openjdk-11-jdk, maven]
+    stage-packages: [openjdk-11-jre]
+    override-build: |
+            mvn clean install
